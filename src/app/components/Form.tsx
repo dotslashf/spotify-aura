@@ -44,9 +44,8 @@ export default function AuraForm() {
   const [playlists, setPlaylists] = useState<{ name: string; id: string }[]>(
     []
   );
-  const [aura, setAura] = useState(
-    `**You groove to the rhythm of the archipelago, a heart split between the nostalgic melodies of the past and the vibrant energy of the Indonesian music scene.** 🎶🇮🇩\n\nYour aura is a blend of chill coffee shop vibes with a dash of rebellious energy, reflecting a love for both introspective ballads and energetic anthems.  You appreciate the classics, but you're always down to discover new sounds from your homeland and beyond. 🎧☕🤘\n\nAura Color: Sunset Orange with a touch of Electric Blue 🌅💙\n\nMusic Nickname: Irama Jiwa (Rhythm of the Soul) \n\n**Kamu bergoyang mengikuti irama nusantara, hati yang terbagi antara melodi nostalgia masa lalu dan energi dinamis dari skena musik Indonesia.** 🎶🇮🇩\n\nAuramu adalah perpaduan antara suasana kedai kopi yang santai dengan sedikit energi pemberontak, mencerminkan kecintaan pada lagu-lagu balada yang introspektif dan lagu-lagu yang energik.  Kamu menghargai musik klasik, tetapi kamu juga selalu ingin menemukan suara-suara baru dari tanah air dan sekitarnya. 🎧☕🤘\n\nWarna Aura: Jingga Senja dengan sentuhan Biru Elektrik 🌅💙\n\nNama Panggilan Musik: Irama Jiwa \n`
-  );
+  const [isUsernameFound, setIsUsernameFound] = useState(false);
+  const [aura, setAura] = useState(``);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -72,17 +71,6 @@ export default function AuraForm() {
     const dataResGenAura = await resGenAura.json();
 
     setAura(dataResGenAura.message);
-
-    toast({
-      title: 'You submitted the following values:',
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(dataResGenAura, null, 2)}
-          </code>
-        </pre>
-      ),
-    });
   }
 
   async function fetchUserPlaylist() {
@@ -101,12 +89,21 @@ export default function AuraForm() {
     );
 
     const data = await res.json();
+    if (data.data.error) {
+      setIsUsernameFound(false);
+      return toast({
+        variant: 'destructive',
+        title: 'Username is not found',
+        description: 'Are you sure its a valid spotify username?',
+      });
+    }
     const items = data.data.items as {
       name: string;
       id: string;
     }[];
 
     setPlaylists(items);
+    setIsUsernameFound(true);
   }
 
   return (
@@ -136,43 +133,50 @@ export default function AuraForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="playlistId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Playlist</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a playlist" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectGroup>
-                          {!playlists.length && (
-                            <SelectLabel>
-                              Fetch Spotify Username First
-                            </SelectLabel>
-                          )}
-                          {playlists.map((playlist) => {
-                            return (
-                              <SelectItem value={playlist.id} key={playlist.id}>
-                                {playlist.name}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">Check the aura 👀</Button>
+              {isUsernameFound && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="playlistId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Playlist</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a playlist" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectGroup>
+                              {!playlists.length && (
+                                <SelectLabel>
+                                  Fetch Spotify Username First
+                                </SelectLabel>
+                              )}
+                              {playlists.map((playlist) => {
+                                return (
+                                  <SelectItem
+                                    value={playlist.id}
+                                    key={playlist.id}
+                                  >
+                                    {playlist.name}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit">Check the aura 👀</Button>
+                </>
+              )}
             </div>
           </form>
         </Form>
