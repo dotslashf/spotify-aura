@@ -71,6 +71,7 @@ export const getUserPlaylistDetail = async (
     return await response.json();
   } catch (error) {
     console.error(error);
+    throw error
   }
 };
 
@@ -94,17 +95,22 @@ export const getArtistsGenres = async (
 };
 
 export const getRefreshToken = async () => {
-  const response = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${BASIC_AUTH}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refresh_token!,
-    }),
-  });
+  try {
+    const response = await fetch(TOKEN_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${BASIC_AUTH}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refresh_token!,
+      }),
+    });
 
-  return response.json();
+    return response.json();
+  } catch (error) {
+    console.log("Error refresh token", error);
+    throw error
+  }
 };

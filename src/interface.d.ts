@@ -96,3 +96,37 @@ export interface Image {
   height: number;
   width: number;
 }
+
+export interface AuraJSON {
+  auraScore: number;
+  auraColors: AuraColors;
+  translations: Translations;
+}
+
+export interface AuraColors {
+  primary: Ary;
+  secondary: Ary;
+  gradientPosition: string;
+}
+
+export interface Ary {
+  hex: string;
+  name: string;
+}
+
+export interface Translations {
+  english: Aura;
+  indonesian: Aura;
+}
+
+export interface Aura {
+  musicNickname: string;
+  keyPoint: string;
+  auraDescription: string;
+  colorMeanings: ColorMeanings;
+}
+
+export interface ColorMeanings {
+  primary: string;
+  secondary: string;
+}

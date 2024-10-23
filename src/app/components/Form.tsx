@@ -26,7 +26,10 @@ import {
 } from '@/components/ui/select';
 import { useState } from 'react';
 import { SelectGroup } from '@radix-ui/react-select';
-import ReactMarkdown from 'react-markdown';
+import { Aura, AuraColors, AuraJSON } from '@/interface';
+import AuraCard from '@/components/AuraCard';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowDownToLine } from 'lucide-react';
 
 const FormSchema = z.object({
   spotifyUserId: z.string().min(2, {
@@ -35,6 +38,7 @@ const FormSchema = z.object({
   playlistId: z.string({
     required_error: 'Playlist cannot be null',
   }),
+  languages: z.enum(['id', 'en']).default('en'),
 });
 
 const BASE_API_URL = 'api/spotify/playlist';
@@ -45,32 +49,63 @@ export default function AuraForm() {
     []
   );
   const [isUsernameFound, setIsUsernameFound] = useState(false);
-  const [aura, setAura] = useState(``);
+  const [aura, setAura] = useState<{
+    aura: Aura,
+    colors: AuraColors,
+    score: number
+  }>();
+  const [genres, setGenres] = useState<string[]>([]);
+
+  const queryClient = useQueryClient();
+
+  const generateAuraMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof FormSchema>) => {
+      const playlistRes = await fetch(
+        `${BASE_API_URL}/${values.spotifyUserId}/${values.playlistId}`,
+        { cache: 'no-store' }
+      );
+      const playlistData = await playlistRes.json();
+      setGenres(playlistData.data);
+
+      const auraRes = await fetch(`api/gen`, {
+        method: 'POST',
+        body: JSON.stringify({
+          genres: playlistData.data,
+          keys: `${form.getValues('spotifyUserId')}:${form.getValues('playlistId')}:aura`
+        }),
+      });
+      const auraData = await auraRes.json();
+
+      return auraData.message as AuraJSON;
+    },
+    onSuccess: (data) => {
+      const language = form.getValues('languages') === 'en' ? 'english' : 'indonesian'
+      setAura({
+        aura: data.translations[language],
+        colors: data.auraColors,
+        score: data.auraScore
+      });
+      queryClient.invalidateQueries({ queryKey: ['aura'] });
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to generate aura. Please try again.',
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       spotifyUserId: '',
+      languages: 'en'
     },
   });
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
-    const res = await fetch(
-      `${BASE_API_URL}/${values.spotifyUserId}/${values.playlistId}`
-    );
-
-    const data = await res.json();
-
-    const resGenAura = await fetch(`api/gen`, {
-      method: 'POST',
-      body: JSON.stringify({
-        genres: data.data,
-      }),
-    });
-
-    const dataResGenAura = await resGenAura.json();
-
-    setAura(dataResGenAura.message);
+    generateAuraMutation.mutate(values);
   }
 
   async function fetchUserPlaylist() {
@@ -125,7 +160,7 @@ export default function AuraForm() {
                       <div className="flex gap-2">
                         <Input placeholder="fadhluu" {...field} />
                         <Button onClick={fetchUserPlaylist} type={'button'}>
-                          Fetch
+                          Get Playlists <ArrowDownToLine className='w-4 h-4 ml-2' />
                         </Button>
                       </div>
                     </FormControl>
@@ -135,46 +170,85 @@ export default function AuraForm() {
               />
               {isUsernameFound && (
                 <>
-                  <FormField
-                    control={form.control}
-                    name="playlistId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Playlist</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a playlist" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              {!playlists.length && (
-                                <SelectLabel>
-                                  Fetch Spotify Username First
-                                </SelectLabel>
-                              )}
-                              {playlists.map((playlist) => {
-                                return (
-                                  <SelectItem
-                                    value={playlist.id}
-                                    key={playlist.id}
-                                  >
-                                    {playlist.name}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit">Check the aura 👀</Button>
+                  <div className="flex gap-4">
+                    <FormField
+                      control={form.control}
+                      name="playlistId"
+                      render={({ field }) => (
+                        <FormItem className='flex-1'>
+                          <FormLabel>Playlist</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a playlist" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                {!playlists.length && (
+                                  <SelectLabel>
+                                    Fetch Spotify Username First
+                                  </SelectLabel>
+                                )}
+                                {playlists.map((playlist) => {
+                                  return (
+                                    <SelectItem
+                                      value={playlist.id}
+                                      key={playlist.id}
+                                    >
+                                      {playlist.name} - {playlist.id}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="languages"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Languages</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="EN/ID" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem
+                                value={"en"}
+                              >
+                                English 🇬🇧
+                              </SelectItem>
+                              <SelectItem
+                                value={"id"}
+                              >
+                                Indonesian 🇮🇩
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={generateAuraMutation.isPending}
+                  >
+                    {generateAuraMutation.isPending ? 'Generating...' : 'get the aura 👀'}
+                  </Button>
                 </>
               )}
             </div>
@@ -183,13 +257,7 @@ export default function AuraForm() {
       </CardContent>
       {aura && (
         <CardContent>
-          <ReactMarkdown
-            className={
-              'bg-card text-card-foreground p-4 rounded-md font-mono border'
-            }
-          >
-            {aura}
-          </ReactMarkdown>
+          <AuraCard genres={genres} auraDescription={aura.aura.auraDescription} colorMeanings={aura.aura.colorMeanings} colors={aura.colors} keyPoint={aura.aura.keyPoint} musicNickname={aura.aura.musicNickname} score={aura.score} />
         </CardContent>
       )}
     </Card>
