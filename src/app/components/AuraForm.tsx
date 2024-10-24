@@ -1,20 +1,34 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Aura, AuraColors, AuraJSON } from "@/interface";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { queryClient } from "../providers";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Aura, AuraColors, AuraJSON } from '@/interface';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowDownToLine, Loader2Icon } from "lucide-react";
-import AuraCard from "@/components/AuraCard";
+import { ArrowDownToLine, Loader2Icon } from 'lucide-react';
+import AuraCard from '@/components/AuraCard';
+import ThemeToggle from './ThemeToggle';
 
 const FormSchema = z.object({
   spotifyUserId: z.string().min(2, {
@@ -31,7 +45,7 @@ const BASE_API_URL = 'api/spotify/playlist';
 interface Playlist {
   name: string;
   id: string;
-};
+}
 
 export default function AuraForm() {
   const { toast } = useToast();
@@ -39,17 +53,17 @@ export default function AuraForm() {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       spotifyUserId: '',
-      languages: 'en'
+      languages: 'en',
     },
   });
   const [genres, setGenres] = useState<string[]>([]);
   const [aura, setAura] = useState<{
-    aura: Aura,
-    colors: AuraColors,
-    score: number
+    aura: Aura;
+    colors: AuraColors;
+    score: number;
   }>();
   const [isLoading, setIsLoading] = useState(false);
-  const [playlists, setPlaylists] = useState<Playlist[]>();
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
   async function fetchUserPlaylist() {
     setIsLoading(true);
@@ -60,25 +74,24 @@ export default function AuraForm() {
         variant: 'destructive',
         title: 'Error',
         description: 'Spotify ID cannot be empty.',
-      })
+      });
     }
 
     const res = await fetch(`${BASE_API_URL}/${spotifyUserId}`);
 
     if (!res.ok) {
-      setPlaylists([])
+      setPlaylists([]);
       return toast({
         variant: 'destructive',
         title: 'Error',
         description: 'User not found',
-      })
+      });
     }
 
     const data = await res.json();
-    const items = data.data.items as Playlist[]
+    const items = data.data.items as Playlist[];
     setPlaylists(items);
   }
-
 
   async function handleFetchPlaylist() {
     await fetchUserPlaylist();
@@ -98,7 +111,9 @@ export default function AuraForm() {
         method: 'POST',
         body: JSON.stringify({
           genres: playlistData.data,
-          keys: `${form.getValues('spotifyUserId')}:${form.getValues('playlistId')}:aura`
+          keys: `${form.getValues('spotifyUserId')}:${form.getValues(
+            'playlistId'
+          )}:aura`,
         }),
       });
       const auraData = await auraRes.json();
@@ -106,14 +121,15 @@ export default function AuraForm() {
       return auraData.message as AuraJSON;
     },
     onSuccess: (data) => {
-      const language = form.getValues('languages') === 'en' ? 'english' : 'indonesian'
+      const language =
+        form.getValues('languages') === 'en' ? 'english' : 'indonesian';
       setAura({
         aura: data.translations[language],
         colors: data.auraColors,
-        score: data.auraScore
+        score: data.auraScore,
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -124,12 +140,13 @@ export default function AuraForm() {
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     generateAuraMutation.mutate(values);
-  };
+  }
 
   return (
     <Card className="max-w-xl w-full">
-      <CardHeader>
+      <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Spotify Aura 🔮</CardTitle>
+        <ThemeToggle />
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -144,8 +161,17 @@ export default function AuraForm() {
                     <FormControl>
                       <div className="flex gap-2">
                         <Input placeholder="fadhluu" {...field} />
-                        <Button onClick={handleFetchPlaylist} type={'button'} disabled={isLoading}>
-                          Get Playlists {isLoading ? <Loader2Icon className='w-4 ml-2 animate-spin' /> : <ArrowDownToLine className='w-4 h-4 ml-2' />}
+                        <Button
+                          onClick={handleFetchPlaylist}
+                          type={'button'}
+                          disabled={isLoading}
+                        >
+                          Get Playlists{' '}
+                          {isLoading ? (
+                            <Loader2Icon className="w-4 ml-2 animate-spin" />
+                          ) : (
+                            <ArrowDownToLine className="w-4 h-4 ml-2" />
+                          )}
                         </Button>
                       </div>
                     </FormControl>
@@ -153,14 +179,14 @@ export default function AuraForm() {
                   </FormItem>
                 )}
               />
-              {playlists && (
+              {playlists.length > 0 && (
                 <>
                   <div className="flex gap-4">
                     <FormField
                       control={form.control}
                       name="playlistId"
                       render={({ field }) => (
-                        <FormItem className='w-full'>
+                        <FormItem className="w-full">
                           <FormLabel>Playlist</FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -206,16 +232,8 @@ export default function AuraForm() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem
-                                value={"en"}
-                              >
-                                English
-                              </SelectItem>
-                              <SelectItem
-                                value={"id"}
-                              >
-                                Indonesian
-                              </SelectItem>
+                              <SelectItem value={'en'}>English</SelectItem>
+                              <SelectItem value={'id'}>Indonesian</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -227,18 +245,29 @@ export default function AuraForm() {
                     type="submit"
                     disabled={generateAuraMutation.isPending}
                   >
-                    {generateAuraMutation.isPending ? 'Generating...' : 'get the aura 👀'}
+                    {generateAuraMutation.isPending
+                      ? 'Generating...'
+                      : 'get the aura 👀'}
                   </Button>
-                </>)}
+                </>
+              )}
             </div>
           </form>
         </Form>
       </CardContent>
       {aura && (
         <CardContent>
-          <AuraCard genres={genres} auraDescription={aura.aura.auraDescription} colorMeanings={aura.aura.colorMeanings} colors={aura.colors} keyPoint={aura.aura.keyPoint} musicNickname={aura.aura.musicNickname} score={aura.score} />
+          <AuraCard
+            genres={genres}
+            auraDescription={aura.aura.auraDescription}
+            colorMeanings={aura.aura.colorMeanings}
+            colors={aura.colors}
+            keyPoint={aura.aura.keyPoint}
+            musicNickname={aura.aura.musicNickname}
+            score={aura.score}
+          />
         </CardContent>
       )}
     </Card>
-  )
+  );
 }
