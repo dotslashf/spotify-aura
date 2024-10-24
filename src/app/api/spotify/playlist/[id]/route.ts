@@ -8,6 +8,12 @@ export async function GET(
   const { access_token } = await getRefreshToken();
   const data = await getUserPlaylists(access_token, params.id);
 
+  if (!data) {
+    return NextResponse.json({
+      error: 'Not found'
+    }, { status: 404 })
+  }
+
   return NextResponse.json({
     data,
   });

@@ -47,6 +47,10 @@ export const getUserPlaylists = async (
       },
     });
 
+    if (!response.ok) {
+      throw new Error("Not found");
+    }
+
     return (await response.json()) as Playlists;
   } catch (error) {
     console.error(error);
@@ -102,6 +106,7 @@ export const getRefreshToken = async () => {
         Authorization: `Basic ${BASIC_AUTH}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
+      cache: 'no-cache',
       body: new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: refresh_token!,
@@ -111,6 +116,6 @@ export const getRefreshToken = async () => {
     return response.json();
   } catch (error) {
     console.log("Error refresh token", error);
-    throw error
+    throw new Error("Token is expired")
   }
 };

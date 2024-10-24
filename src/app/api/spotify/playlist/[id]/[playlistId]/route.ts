@@ -53,7 +53,6 @@ export async function GET(
       genres,
     });
 
-
     return NextResponse.json({
       data: genres
     });
