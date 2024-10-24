@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -29,6 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowDownToLine, Loader2Icon } from 'lucide-react';
 import AuraCard from '@/components/AuraCard';
 import ThemeToggle from './ThemeToggle';
+import { getSpotifyUsername } from '@/lib/utils';
 
 const FormSchema = z.object({
   spotifyUserId: z.string().min(2, {
@@ -67,30 +69,38 @@ export default function AuraForm() {
 
   async function fetchUserPlaylist() {
     setIsLoading(true);
-    const spotifyUserId = form.getValues('spotifyUserId');
+    try {
+      const spotifyUserId = getSpotifyUsername(form.getValues('spotifyUserId'));
 
-    if (!spotifyUserId) {
+      if (!spotifyUserId) {
+        return toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Spotify ID cannot be empty.',
+        });
+      }
+
+      const res = await fetch(`${BASE_API_URL}/${spotifyUserId}`);
+
+      if (!res.ok) {
+        setPlaylists([]);
+        return toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'User not found',
+        });
+      }
+
+      const data = await res.json();
+      const items = data.data.items as Playlist[];
+      setPlaylists(items);
+    } catch (error) {
       return toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Spotify ID cannot be empty.',
+        description: error.message,
       });
     }
-
-    const res = await fetch(`${BASE_API_URL}/${spotifyUserId}`);
-
-    if (!res.ok) {
-      setPlaylists([]);
-      return toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'User not found',
-      });
-    }
-
-    const data = await res.json();
-    const items = data.data.items as Playlist[];
-    setPlaylists(items);
   }
 
   async function handleFetchPlaylist() {
@@ -160,13 +170,16 @@ export default function AuraForm() {
                     <FormLabel>Spotify Username</FormLabel>
                     <FormControl>
                       <div className="flex gap-2">
-                        <Input placeholder="fadhluu" {...field} />
+                        <Input
+                          placeholder="fadhluu or https://open.spotify.com/user/fadhluu"
+                          {...field}
+                        />
                         <Button
                           onClick={handleFetchPlaylist}
                           type={'button'}
                           disabled={isLoading}
                         >
-                          Get Playlists{' '}
+                          Get
                           {isLoading ? (
                             <Loader2Icon className="w-4 ml-2 animate-spin" />
                           ) : (
@@ -175,6 +188,11 @@ export default function AuraForm() {
                         </Button>
                       </div>
                     </FormControl>
+                    <FormDescription>
+                      Spotify username can be checked at profile.
+                      <br />
+                      It looks like this https://open.spotify.com/user/fadhluu
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -245,9 +263,14 @@ export default function AuraForm() {
                     type="submit"
                     disabled={generateAuraMutation.isPending}
                   >
-                    {generateAuraMutation.isPending
-                      ? 'Generating...'
-                      : 'get the aura 👀'}
+                    {generateAuraMutation.isPending ? (
+                      <>
+                        Generating{' '}
+                        <Loader2Icon className="ml-2 w-4 animate-spin" />
+                      </>
+                    ) : (
+                      'get the aura 👀'
+                    )}
                   </Button>
                 </>
               )}
