@@ -12,13 +12,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string; playlistId: string } }
 ) {
-  const USERNAME_ID_PLAYLIST_ID = `${params.id}:${params.playlistId}`
+  const USERNAME_ID_PLAYLIST_ID = `${params.id}:${params.playlistId}`;
   try {
     const isGenreExist = await kv.hgetall(USERNAME_ID_PLAYLIST_ID);
     if (isGenreExist) {
       return NextResponse.json({
-        data: isGenreExist.genres
-      })
+        data: isGenreExist.genres,
+      });
     }
 
     const { access_token } = await getRefreshToken();
@@ -53,14 +53,11 @@ export async function GET(
       genres,
     });
 
-    const nextResponse = NextResponse.json({
-      data: genres
+    return NextResponse.json({
+      data: genres,
     });
-
-    nextResponse.headers.set("Cache-Control", "public, max-age=3600");
-    return nextResponse;
   } catch (error) {
-    console.log(error)
-    throw new Error("Something went wrong");
+    console.log(error);
+    throw new Error('Something went wrong');
   }
 }
