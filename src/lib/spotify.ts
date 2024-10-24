@@ -48,7 +48,7 @@ export const getUserPlaylists = async (
     });
 
     if (!response.ok) {
-      throw new Error("Not found");
+      throw new Error('Not found');
     }
 
     return (await response.json()) as Playlists;
@@ -75,7 +75,7 @@ export const getUserPlaylistDetail = async (
     return await response.json();
   } catch (error) {
     console.error(error);
-    throw error
+    throw error;
   }
 };
 
@@ -115,7 +115,7 @@ export const getRefreshToken = async () => {
 
     return response.json();
   } catch (error) {
-    console.log("Error refresh token", error);
-    throw new Error("Token is expired")
+    console.log('Error refresh token', error);
+    throw new Error('Token is expired');
   }
 };

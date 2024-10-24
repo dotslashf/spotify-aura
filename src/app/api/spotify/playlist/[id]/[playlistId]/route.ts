@@ -12,13 +12,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string; playlistId: string } }
 ) {
-  const USERNAME_ID_PLAYLIST_ID = `${params.id}:${params.playlistId}`
+  const USERNAME_ID_PLAYLIST_ID = `${params.id}:${params.playlistId}`;
   try {
     const isGenreExist = await kv.hgetall(USERNAME_ID_PLAYLIST_ID);
     if (isGenreExist) {
       return NextResponse.json({
-        data: isGenreExist.genres
-      })
+        data: isGenreExist.genres,
+      });
     }
 
     const { access_token } = await getRefreshToken();
@@ -54,10 +54,10 @@ export async function GET(
     });
 
     return NextResponse.json({
-      data: genres
+      data: genres,
     });
   } catch (error) {
-    console.log(error)
-    throw new Error("Something went wrong");
+    console.log(error);
+    throw new Error('Something went wrong');
   }
 }
