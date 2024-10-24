@@ -1,4 +1,5 @@
-import AuraForm from "@/app/components/Form";
+import AuraForm from "@/app/components/AuraForm";
+// import Form from "@/app/components/Form";
 
 export default function Home() {
   return (
@@ -7,6 +8,7 @@ export default function Home() {
         <div
           className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-y-4">
           <AuraForm />
+          {/* <Form /> */}
         </div>
       </div>
     </main>

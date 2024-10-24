@@ -51,7 +51,7 @@ export default function AuraCard({
                 position={colors.gradientPosition}
                 preview={true}
               />
-              <div className='bg-primary h-10 w-full justify-center items-center flex rounded-b-sm text-white'>{musicNickname}</div>
+              <div className='bg-[#252525] h-10 w-full justify-center items-center flex rounded-b-sm text-white'>{musicNickname}</div>
             </div>
             <div className="flex gap-2">
               <ColorBar hex={colors.primary.hex} height={4} rounded='sm' />

@@ -53,10 +53,12 @@ export async function GET(
       genres,
     });
 
-
-    return NextResponse.json({
+    const nextResponse = NextResponse.json({
       data: genres
     });
+
+    nextResponse.headers.set("Cache-Control", "public, max-age=3600");
+    return nextResponse;
   } catch (error) {
     console.log(error)
     throw new Error("Something went wrong");

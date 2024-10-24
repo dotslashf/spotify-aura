@@ -11,7 +11,7 @@ interface AuraColorProps {
 export default function AuraColor({ color, position, preview = false }: AuraColorProps) {
     return (
         <div
-            className={cn("w-full border-primary h-full aspect-square rounded-t-sm flex items-center justify-center relative overflow-hidden mx-auto sm:ml-0", preview ? "border-4 border-b-0" : "rounded-sm")}
+            className={cn("w-full border-[#252525] h-full aspect-square rounded-t-sm flex items-center justify-center relative overflow-hidden mx-auto sm:ml-0", preview ? "border-4 border-b-0" : "rounded-sm")}
             style={{
                 background: `radial-gradient(circle at ${position}, ${color.primary}, ${color.secondary})`,
             }}
