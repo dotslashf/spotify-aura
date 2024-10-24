@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface AuraColorProps {
@@ -8,11 +9,8 @@ interface AuraColorProps {
   };
   preview?: boolean;
 }
-export default function AuraColor({
-  color,
-  position,
-  preview = false,
-}: AuraColorProps) {
+
+const AuraColor = ({ color, position, preview = false }: AuraColorProps) => {
   return (
     <div
       className={cn(
@@ -23,15 +21,36 @@ export default function AuraColor({
         background: `radial-gradient(circle at ${position}, ${color.primary}, ${color.secondary})`,
       }}
     >
-      <div
-        className="absolute inset-0 opacity-[0.75] mix-blend-soft-light"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          width: '100%',
-          height: '100%',
-        }}
-      />
+      <svg
+        className="absolute inset-0 w-full h-full opacity-80 mix-blend-overlay pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+        width="100%"
+        height="100%"
+      >
+        <defs>
+          <filter id="noise">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.35"
+              numOctaves="3"
+              stitchTiles="stitch"
+              result="noise"
+            />
+            <feColorMatrix
+              type="matrix"
+              values="1 0 0 0 0
+                     1 0 0 0 0
+                     1 0 0 0 0
+                     0 0 0 0.15 0"
+              in="noise"
+              result="monoNoise"
+            />
+          </filter>
+        </defs>
+        <rect width="100%" height="100%" filter="url(#noise)" />
+      </svg>
     </div>
   );
-}
+};
+
+export default AuraColor;
