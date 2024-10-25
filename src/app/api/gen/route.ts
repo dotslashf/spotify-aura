@@ -25,8 +25,17 @@ export async function POST(req: NextRequest) {
   const isAuraExist = await kv.hgetall(keys);
   if (isAuraExist) {
     return NextResponse.json({
-      message: isAuraExist
-    })
+      message: isAuraExist,
+    });
+  }
+
+  if (!isAuraExist && !genres) {
+    return NextResponse.json(
+      {
+        error: 'Aura Not found',
+      },
+      { status: 404 }
+    );
   }
 
   const session = model.startChat({
@@ -35,10 +44,10 @@ export async function POST(req: NextRequest) {
 
   const result = await session.sendMessage(genres);
 
-  const cleanedJson = extractJSON(result.response.text())
-  await kv.hset(keys, cleanedJson)
+  const cleanedJson = extractJSON(result.response.text());
+  await kv.hset(keys, cleanedJson);
 
   return NextResponse.json({
-    message: cleanedJson
+    message: cleanedJson,
   });
 }

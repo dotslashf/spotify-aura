@@ -13,7 +13,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
-import { ChevronUp, Download, Share } from 'lucide-react';
+import { ChevronUp, Download, Link, Share } from 'lucide-react';
 import { Aura, AuraColors } from '@/interface';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
@@ -27,11 +27,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToPng } from '@hugocxl/react-to-image';
+import { useToast } from '@/hooks/use-toast';
+import { BASE_URL } from '@/lib/constants';
+import { encodeSpotifyAuraId } from '@/lib/utils';
 
 interface AuraProps extends Aura {
   genres: string[];
   colors: AuraColors;
   score: number;
+  uniqueId: string;
 }
 export default function AuraCard({
   auraDescription,
@@ -41,8 +45,11 @@ export default function AuraCard({
   colorMeanings,
   colors,
   score,
+  uniqueId,
 }: AuraProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+  const encodedUniqueId = encodeSpotifyAuraId(uniqueId);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, convert, ref] = useToPng<HTMLDivElement>({
@@ -53,6 +60,15 @@ export default function AuraCard({
       link.click();
     },
   });
+
+  async function shareUrl() {
+    await navigator.clipboard.writeText(`${BASE_URL}/aura/${encodedUniqueId}`);
+    return toast({
+      variant: 'default',
+      title: 'Url is copied!',
+      description: 'Share your spotify-aura',
+    });
+  }
 
   return (
     <Card className="w-full mx-auto rounded-md dark:bg-[#252525] bg-[#f3f3f3]">
@@ -106,6 +122,10 @@ export default function AuraCard({
                 <DropdownMenuItem onClick={convert}>
                   Download Aura
                   <Download className="ml-2 w-4" />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={shareUrl}>
+                  Share Url
+                  <Link className="ml-2 w-4" />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

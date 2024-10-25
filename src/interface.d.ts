@@ -1,3 +1,8 @@
+export interface Playlist {
+  name: string;
+  id: string;
+}
+
 export interface Playlists {
   href: string;
   limit: number;
