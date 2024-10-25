@@ -2,7 +2,7 @@
 
 import AuraCard from '@/components/AuraCard';
 import AuraCardSkeleton from '@/components/AuraCardSkeleton';
-import { AuraJSON, Playlist } from '@/interface';
+import { AuraJSON } from '@/interface';
 import { decodeSpotifyAuraId } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 
