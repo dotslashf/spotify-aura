@@ -2,9 +2,12 @@
 
 import AuraCard from '@/components/AuraCard';
 import AuraCardSkeleton from '@/components/AuraCardSkeleton';
+import { buttonVariants } from '@/components/ui/button';
 import { AuraJSON } from '@/interface';
-import { decodeSpotifyAuraId } from '@/lib/utils';
+import { cn, decodeSpotifyAuraId } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
+import { Music } from 'lucide-react';
+import Link from 'next/link';
 
 interface AuraShareProps {
   id: string;
@@ -60,7 +63,7 @@ export default function AuraShare({ id }: AuraShareProps) {
   if (error) return <div>{error.message}</div>;
 
   return (
-    <div className="max-w-lg w-full">
+    <div className="max-w-lg w-full flex flex-col gap-4">
       {isLoading && <AuraCardSkeleton />}
       {aura && (
         <AuraCard
@@ -74,6 +77,17 @@ export default function AuraShare({ id }: AuraShareProps) {
           uniqueId={`${decodedSpotifyAuraId}`}
         />
       )}
+      <Link
+        className={cn(
+          buttonVariants({
+            variant: 'default',
+          })
+        )}
+        href={'/'}
+      >
+        Generate your own spotify aura
+        <Music className="ml-2 w-4" />
+      </Link>
     </div>
   );
 }
