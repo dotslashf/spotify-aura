@@ -57,3 +57,11 @@ export function getSpotifyUsername(input: string): string {
     throw new Error('Invalid input: not a valid Spotify user link or username');
   }
 }
+
+export function encodeSpotifyAuraId(spotifyUserIdPlaylistId: string) {
+  return Buffer.from(`${spotifyUserIdPlaylistId}`).toString('base64');
+}
+
+export function decodeSpotifyAuraId(uniqueId: string) {
+  return Buffer.from(uniqueId, 'base64').toString();
+}

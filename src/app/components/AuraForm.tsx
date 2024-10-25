@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Aura, AuraColors, AuraJSON } from '@/interface';
+import { Aura, AuraColors, AuraJSON, Playlist } from '@/interface';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -43,11 +43,6 @@ const FormSchema = z.object({
 });
 
 const BASE_API_URL = 'api/spotify/playlist';
-
-interface Playlist {
-  name: string;
-  id: string;
-}
 
 export default function AuraForm() {
   const { toast } = useToast();
@@ -290,6 +285,9 @@ export default function AuraForm() {
             keyPoint={aura.aura.keyPoint}
             musicNickname={aura.aura.musicNickname}
             score={aura.score}
+            uniqueId={`${form.getValues('spotifyUserId')}:${form.getValues(
+              'playlistId'
+            )}`}
           />
         </CardContent>
       )}
