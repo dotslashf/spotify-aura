@@ -12,7 +12,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string; playlistId: string } }
 ) {
-  const USERNAME_ID_PLAYLIST_ID = `${params.id}:${params.playlistId}`;
+  const USERNAME_ID_PLAYLIST_ID =
+    `${params.id}:${params.playlistId}`.toLowerCase();
   try {
     const isGenreExist = await kv.hgetall(USERNAME_ID_PLAYLIST_ID);
     if (isGenreExist) {
