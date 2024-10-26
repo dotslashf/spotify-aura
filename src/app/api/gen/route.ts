@@ -19,6 +19,8 @@ const generationConfig = {
   responseMimeType: 'text/plain',
 };
 
+export const maxDuration = 20;
+
 export async function POST(req: NextRequest) {
   const { genres, keys } = await req.json();
 
